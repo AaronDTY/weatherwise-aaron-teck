@@ -1,4 +1,4 @@
-# ✍️ Project Reflection
+# ✍ Project Reflection
 
 ## AI Tools Used
 For the WeatherWise project, I primarily used Claude as my AI assistant. Claude helped me in multiple ways throughout the development process:
@@ -14,15 +14,15 @@ The AI assistant was particularly valuable for implementing the pattern matching
 ## Prompting Techniques
 Throughout the development process, I applied several intentional prompting strategies:
 
-1. **Problem restatement**: Before requesting implementations, I restated the problem in my own words to ensure clarity and focus. This helped the AI understand exactly what I needed.
+1. *Problem restatement*: Before requesting implementations, I restated the problem in my own words to ensure clarity and focus. This helped the AI understand exactly what I needed.
 
-2. **Incremental complexity**: I started with basic functionality requests before adding complexity, allowing the AI to build on solid foundations rather than trying to solve everything at once.
+2. *Incremental complexity*: I started with basic functionality requests before adding complexity, allowing the AI to build on solid foundations rather than trying to solve everything at once.
 
-3. **Edge case exploration**: I specifically asked about edge cases and error scenarios, which led to more robust implementations that could handle network failures, invalid locations, and malformed API responses.
+3. *Edge case exploration*: I specifically asked about edge cases and error scenarios, which led to more robust implementations that could handle network failures, invalid locations, and malformed API responses.
 
-4. **Before/after comparisons**: When requesting improvements, I provided the current code and specifically asked for enhancements, resulting in targeted refinements rather than complete rewrites.
+4. *Before/after comparisons*: When requesting improvements, I provided the current code and specifically asked for enhancements, resulting in targeted refinements rather than complete rewrites.
 
-5. **Explanation requests**: By asking the AI to explain its code, I gained deeper insights into the implementation and identified potential issues that might not be obvious from just reading the code.
+5. *Explanation requests*: By asking the AI to explain its code, I gained deeper insights into the implementation and identified potential issues that might not be obvious from just reading the code.
 
 ## What Worked Well?
 I'm particularly proud of the modular design approach I took with this project. By dividing the application into distinct components (weather data retrieval, natural language processing, visualization, and user interface), I was able to develop and test each module independently before integration. 
