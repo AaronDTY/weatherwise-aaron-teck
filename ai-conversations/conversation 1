@@ -390,3 +390,4 @@ def create_temperature_visualisation(weather_data, output_type='display'):
     
     plt.show()
     return None
+```
