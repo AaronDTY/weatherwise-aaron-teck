@@ -1,3 +1,8 @@
+----------------------------------
+Tool: Claude
+Date: 2025-05-16
+----------------------------------
+
 Me: I need help implementing the natural language processing component for my WeatherWise application. I'm not sure how to approach parsing weather-related questions.
 
 AI: I'd be happy to help you implement the natural language processing (NLP) component for your WeatherWise application. Parsing weather-related questions can be approached in several ways, from simple pattern matching to more complex NLP techniques. Let's start by understanding what types of questions your application needs to handle.
