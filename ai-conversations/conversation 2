@@ -391,3 +391,8 @@ def generate_weather_response(parsed_question, weather_data):
 ```
 
 These enhancements will make your NLP component much more robust and capable of handling a wider range of user questions. The specific day handling allows users to ask about any day of the week, the improved location extraction will catch more location references, and the weekend and week cases provide comprehensive responses for longer-term forecasts.
+    
+    # ... rest of the function ...
+```
+
+These enhancements will make your NLP component much more robust and capable of handling a wider range of user questions. The specific day handling allows users to ask about any day of the week, the improved location extraction will catch more location references, and the weekend and week cases provide comprehensive responses for longer-term forecasts.
