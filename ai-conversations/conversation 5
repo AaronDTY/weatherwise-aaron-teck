@@ -1,0 +1,868 @@
+Me: I need help designing and implementing the user interface for my WeatherWise application. I want to create a menu-based system that integrates all the core functions.
+
+AI: I'd be happy to help you design and implement the user interface for your WeatherWise application! A well-designed UI is crucial for making your weather data and visualizations accessible to users.
+
+Let's start by outlining what the UI needs to accomplish:
+
+1. Provide a clear menu structure for navigating different features
+2. Allow users to input locations and questions
+3. Display weather data in a readable format
+4. Show visualizations when requested
+5. Handle errors gracefully
+
+For a console-based application using pyinputplus, we can create a menu-driven interface. Would you like me to outline a basic structure for this, or do you have specific ideas about how you want the UI to work?
+
+Me: I'd like a menu-driven interface with options for current weather, forecasts, asking questions, and viewing visualizations. I want it to be user-friendly and handle errors gracefully.
+
+AI: That sounds like a great approach! Let's design a menu-driven interface for your WeatherWise application with those features. I'll provide a complete implementation that you can adapt to your needs.
+
+Here's how we can structure the UI module:
+
+```python
+"""
+User Interface Module
+
+This module handles the user interface components of the WeatherWise application.
+"""
+
+import pyinputplus as pyip
+from IPython.display import clear_output
+import matplotlib.pyplot as plt
+
+def display_menu():
+    """
+    Display the main menu of the application.
+    
+    Returns:
+        int: User's menu choice
+    """
+    print("\n" + "=" * 50)
+    print("WeatherWise - Intelligent Weather Analysis & Advisory")
+    print("=" * 50)
+    
+    menu_options = [
+        "Get Current Weather",
+        "View Weather Forecast",
+        "Ask a Weather Question",
+        "View Temperature Visualization",
+        "View Precipitation Visualization",
+        "Exit"
+    ]
+    
+    # Display menu options
+    for i, option in enumerate(menu_options, 1):
+        print(f"{i}. {option}")
+    
+    # Get user choice
+    choice = pyip.inputInt(
+        prompt="\nEnter your choice (1-6): ",
+        min=1,
+        max=len(menu_options),
+        blank=False
+    )
+    
+    return choice
+
+def get_location_input():
+    """
+    Get location input from the user.
+    
+    Returns:
+        str: Location entered by the user
+    """
+    location = pyip.inputStr(
+        prompt="Enter a location (city, country): ",
+        blank=False
+    )
+    return location
+
+def get_forecast_days_input():
+    """
+    Get the number of forecast days from the user.
+    
+    Returns:
+        int: Number of forecast days (1-5)
+    """
+    days = pyip.inputInt(
+        prompt="Enter number of forecast days (1-5): ",
+        min=1,
+        max=5,
+        blank=False
+    )
+    return days
+
+def get_weather_question_input():
+    """
+    Get a weather-related question from the user.
+    
+    Returns:
+        str: Weather question entered by the user
+    """
+    question = pyip.inputStr(
+        prompt="Ask a weather-related question: ",
+        blank=False
+    )
+    return question
+
+def display_loading_message(message="Loading..."):
+    """
+    Display a loading message.
+    
+    Args:
+        message (str): Message to display
+    """
+    print(f"\n{message}\n")
+
+def display_weather_data(weather_data):
+    """
+    Display weather data in a formatted way.
+    
+    Args:
+        weather_data (dict): Weather data to display
+    """
+    if 'error' in weather_data:
+        print(f"\nError: {weather_data.get('message', 'Could not retrieve weather data')}")
+        return
+    
+    # Location information
+    location = weather_data['location']['name']
+    country = weather_data['location']['country']
+    location_str = f"{location}, {country}" if country else location
+    
+    print("\n" + "=" * 50)
+    print(f"Weather for {location_str}")
+    print("=" * 50)
+    
+    # Current conditions
+    current = weather_data['current']
+    print("\nCurrent Conditions:")
+    print(f"Temperature: {current['temperature_c']}°C ({current['temperature_f']}°F)")
+    print(f"Feels Like: {current['feels_like_c']}°C ({current['feels_like_f']}°F)")
+    print(f"Weather: {current['weather_description']}")
+    print(f"Humidity: {current['humidity']}%")
+    print(f"Wind: {current['wind_speed_kmph']} km/h, {current['wind_direction']}")
+    print(f"Precipitation: {current['precipitation_mm']} mm")
+    print(f"Observation Time: {current['observation_time']}")
+
+def display_forecast(weather_data):
+    """
+    Display forecast data in a formatted way.
+    
+    Args:
+        weather_data (dict): Weather data to display
+    """
+    if 'error' in weather_data:
+        print(f"\nError: {weather_data.get('message', 'Could not retrieve weather data')}")
+        return
+    
+    # Location information
+    location = weather_data['location']['name']
+    country = weather_data['location']['country']
+    location_str = f"{location}, {country}" if country else location
+    
+    print("\n" + "=" * 50)
+    print(f"Weather Forecast for {location_str}")
+    print("=" * 50)
+    
+    # Display forecast for each day
+    for day in weather_data['forecast']:
+        print(f"\n{day['day_of_week']} ({day['date']}):")
+        print(f"Temperature: {day['min_temp_c']}°C to {day['max_temp_c']}°C")
+        print(f"Sunrise: {day['sunrise']}, Sunset: {day['sunset']}")
+        
+        # Display hourly forecast
+        print("\nHourly Forecast:")
+        for hour in day['hourly']:
+            # Convert time format (e.g., '0000' to '00:00')
+            time_str = hour['time']
+            formatted_time = f"{time_str[:2]}:{time_str[2:]}" if len(time_str) == 4 else time_str
+            
+            print(f"  {formatted_time}: {hour['temperature_c']}°C, {hour['weather_description']}, " +
+                  f"Rain: {hour['chance_of_rain']}%, Humidity: {hour['humidity']}%")
+        
+        print("-" * 50)
+
+def display_weather_response(response):
+    """
+    Display a natural language response to a weather question.
+    
+    Args:
+        response (str): Response to display
+    """
+    print("\n" + "=" * 50)
+    print("Weather Answer")
+    print("=" * 50)
+    print(f"\n{response}\n")
+
+def display_visualization(fig):
+    """
+    Display a visualization figure.
+    
+    Args:
+        fig: Matplotlib figure object
+    """
+    if fig:
+        plt.figure(fig.number)
+        plt.show()
+    else:
+        print("\nNo visualization data available.")
+
+def handle_user_input(choice, weather_data_module, nlp_module, visualization_module):
+    """
+    Handle the user's menu choice.
+    
+    Args:
+        choice (int): User's menu choice
+        weather_data_module: Module containing weather data functions
+        nlp_module: Module containing NLP functions
+        visualization_module: Module containing visualization functions
+        
+    Returns:
+        bool: True if the application should continue, False if it should exit
+    """
+    if choice == 6:  # Exit
+        return False
+    
+    # Get location for options 1-5
+    if choice in [1, 2, 3, 4, 5]:
+        location = get_location_input()
+    
+    # Handle each menu option
+    if choice == 1:  # Get Current Weather
+        display_loading_message("Retrieving current weather data...")
+        weather_data = weather_data_module.get_weather_data(location, forecast_days=1)
+        display_weather_data(weather_data)
+    
+    elif choice == 2:  # View Weather Forecast
+        days = get_forecast_days_input()
+        display_loading_message(f"Retrieving {days}-day forecast...")
+        weather_data = weather_data_module.get_weather_data(location, forecast_days=days)
+        display_forecast(weather_data)
+    
+    elif choice == 3:  # Ask a Weather Question
+        question = get_weather_question_input()
+        display_loading_message("Processing your question...")
+        
+        # Get weather data for the location
+        weather_data = weather_data_module.get_weather_data(location, forecast_days=5)
+        
+        # Parse the question and generate a response
+        parsed_question = nlp_module.parse_weather_question(question)
+        response = nlp_module.generate_weather_response(parsed_question, weather_data)
+        
+        display_weather_response(response)
+    
+    elif choice == 4:  # View Temperature Visualization
+        display_loading_message("Generating temperature visualization...")
+        weather_data = weather_data_module.get_weather_data(location, forecast_days=5)
+        fig = visualization_module.create_temperature_visualisation(weather_data, output_type='figure')
+        display_visualization(fig)
+    
+    elif choice == 5:  # View Precipitation Visualization
+        display_loading_message("Generating precipitation visualization...")
+        weather_data = weather_data_module.get_weather_data(location, forecast_days=5)
+        fig = visualization_module.create_precipitation_visualisation(weather_data, output_type='figure')
+        display_visualization(fig)
+    
+    return True
+
+def clear_screen():
+    """Clear the screen for better readability."""
+    try:
+        clear_output(wait=True)  # For Jupyter notebooks
+    except:
+        print("\n" * 50)  # Fallback for console
+```
+
+And here's how you can integrate this UI with your main application:
+
+```python
+"""
+Main Application Module
+
+This module serves as the entry point for the WeatherWise application.
+"""
+
+import sys
+import os
+
+# Add the parent directory to the path to allow importing local modules
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Import local modules
+from src import weather_data
+from src import nlp
+from src import visualization
+from src import ui
+
+def main():
+    """
+    Main application entry point.
+    """
+    print("Welcome to WeatherWise!")
+    print("An intelligent weather analysis and advisory system.")
+    
+    running = True
+    while running:
+        # Clear the screen for better readability
+        ui.clear_screen()
+        
+        # Display the menu and get user choice
+        choice = ui.display_menu()
+        
+        # Handle the user's choice
+        running = ui.handle_user_input(choice, weather_data, nlp, visualization)
+        
+        # If not exiting, wait for user to press Enter before showing the menu again
+        if running:
+            input("\nPress Enter to continue...")
+    
+    print("\nThank you for using WeatherWise!")
+
+if __name__ == "__main__":
+    main()
+```
+
+This UI design has several key features:
+
+1. **Clear Menu Structure**: A numbered menu that's easy to navigate
+2. **User-Friendly Input**: Using pyinputplus for validated input
+3. **Formatted Output**: Well-formatted display of weather data and forecasts
+4. **Loading Messages**: Feedback during API calls and processing
+5. **Error Handling**: Graceful display of error messages
+6. **Visualization Integration**: Proper display of matplotlib figures
+7. **Clean Navigation**: Screen clearing and "Press Enter to continue" prompts
+
+Would you like me to explain any specific part of this implementation in more detail, or would you like suggestions for additional UI features?
+
+Me: This looks great! I have a few questions:
+1. How can I make the UI more interactive, especially for visualizations?
+2. What's the best way to handle errors in the UI so they're user-friendly?
+3. How would you recommend extending the menu to include the hourly temperature visualization?
+
+AI: Great questions! Let's address each one to enhance your UI:
+
+### 1. Making the UI More Interactive for Visualizations
+
+To make visualizations more interactive, especially in a Jupyter notebook environment, you can:
+
+#### A. Add Interactive Selection for Visualization Parameters
+
+```python
+def get_visualization_parameters(weather_data):
+    """
+    Get user input for visualization parameters.
+    
+    Args:
+        weather_data (dict): Weather data
+        
+    Returns:
+        dict: Visualization parameters
+    """
+    # Initialize parameters
+    params = {}
+    
+    # Ask if user wants to customize visualization
+    customize = pyip.inputYesNo(
+        prompt="Would you like to customize the visualization? (yes/no): ",
+        default="no"
+    )
+    
+    if customize == "yes":
+        # Temperature range
+        params['show_feels_like'] = pyip.inputYesNo(
+            prompt="Show 'feels like' temperatures? (yes/no): ",
+            default="yes"
+        ) == "yes"
+        
+        # Color scheme
+        color_schemes = ["Default", "Vibrant", "Pastel", "Monochrome"]
+        color_choice = pyip.inputMenu(
+            color_schemes,
+            prompt="Select a color scheme:\n",
+            numbered=True
+        )
+        params['color_scheme'] = color_choice.lower()
+        
+        # Title customization
+        custom_title = pyip.inputYesNo(
+            prompt="Add a custom title? (yes/no): ",
+            default="no"
+        )
+        if custom_title == "yes":
+            params['custom_title'] = pyip.inputStr(
+                prompt="Enter custom title: ",
+                blank=False
+            )
+    
+    return params
+```
+
+#### B. Implement Interactive Figure Controls
+
+For Jupyter notebooks, you can use ipywidgets to add interactive controls:
+
+```python
+def display_interactive_visualization(weather_data, visualization_module):
+    """
+    Display an interactive visualization with controls.
+    
+    Args:
+        weather_data (dict): Weather data
+        visualization_module: Module containing visualization functions
+    """
+    import ipywidgets as widgets
+    from IPython.display import display
+    
+    # Create widgets
+    viz_type = widgets.Dropdown(
+        options=['Temperature', 'Precipitation', 'Hourly Temperature'],
+        value='Temperature',
+        description='Visualization:',
+    )
+    
+    day_selector = widgets.IntSlider(
+        value=0,
+        min=0,
+        max=len(weather_data['forecast'])-1,
+        step=1,
+        description='Day:',
+        disabled=False,
+    )
+    
+    # Only show day selector for hourly visualization
+    day_selector.layout.display = 'none'
+    
+    output = widgets.Output()
+    
+    # Define update function
+    def update_viz(change):
+        with output:
+            output.clear_output(wait=True)
+            
+            if viz_type.value == 'Temperature':
+                day_selector.layout.display = 'none'
+                fig = visualization_module.create_temperature_visualisation(weather_data, output_type='figure')
+                plt.figure(fig.number)
+                plt.show()
+                
+            elif viz_type.value == 'Precipitation':
+                day_selector.layout.display = 'none'
+                fig = visualization_module.create_precipitation_visualisation(weather_data, output_type='figure')
+                plt.figure(fig.number)
+                plt.show()
+                
+            elif viz_type.value == 'Hourly Temperature':
+                day_selector.layout.display = 'block'
+                fig = visualization_module.create_hourly_temperature_visualisation(
+                    weather_data, day_index=day_selector.value, output_type='figure'
+                )
+                plt.figure(fig.number)
+                plt.show()
+    
+    # Register callbacks
+    viz_type.observe(update_viz, names='value')
+    day_selector.observe(update_viz, names='value')
+    
+    # Display widgets and initial visualization
+    display(viz_type, day_selector, output)
+    update_viz(None)
+```
+
+#### C. Add Visualization Comparison Option
+
+```python
+def compare_locations_visualization(visualization_module):
+    """
+    Compare weather visualizations between two locations.
+    
+    Args:
+        visualization_module: Module containing visualization functions
+    """
+    # Get first location
+    print("\n=== First Location ===")
+    location1 = get_location_input()
+    
+    # Get second location
+    print("\n=== Second Location ===")
+    location2 = get_location_input()
+    
+    # Get visualization type
+    viz_types = ["Temperature", "Precipitation"]
+    viz_type = pyip.inputMenu(
+        viz_types,
+        prompt="\nSelect visualization type to compare:\n",
+        numbered=True
+    )
+    
+    # Get weather data for both locations
+    print(f"\nRetrieving weather data for {location1} and {location2}...")
+    weather_data1 = weather_data_module.get_weather_data(location1, forecast_days=5)
+    weather_data2 = weather_data_module.get_weather_data(location2, forecast_days=5)
+    
+    # Check for errors
+    if 'error' in weather_data1:
+        print(f"\nError retrieving data for {location1}: {weather_data1.get('message')}")
+        return
+    if 'error' in weather_data2:
+        print(f"\nError retrieving data for {location2}: {weather_data2.get('message')}")
+        return
+    
+    # Create side-by-side visualizations
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
+    
+    # Generate visualizations based on type
+    if viz_type == "Temperature":
+        visualization_module.create_temperature_visualisation_on_axis(weather_data1, ax1)
+        visualization_module.create_temperature_visualisation_on_axis(weather_data2, ax2)
+    else:  # Precipitation
+        visualization_module.create_precipitation_visualisation_on_axis(weather_data1, ax1)
+        visualization_module.create_precipitation_visualisation_on_axis(weather_data2, ax2)
+    
+    # Set titles
+    loc1_name = f"{weather_data1['location']['name']}, {weather_data1['location']['country']}"
+    loc2_name = f"{weather_data2['location']['name']}, {weather_data2['location']['country']}"
+    ax1.set_title(f"{viz_type} for {loc1_name}", fontsize=14)
+    ax2.set_title(f"{viz_type} for {loc2_name}", fontsize=14)
+    
+    # Add overall title
+    plt.suptitle(f"Comparing {viz_type} Between {loc1_name} and {loc2_name}", fontsize=16)
+    
+    # Adjust layout
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.9)
+    
+    # Display the figure
+    plt.show()
+```
+
+### 2. User-Friendly Error Handling in the UI
+
+To make error handling more user-friendly:
+
+#### A. Create a Dedicated Error Display Function
+
+```python
+def display_error(error_message, suggestion=None):
+    """
+    Display an error message with a user-friendly format and optional suggestion.
+    
+    Args:
+        error_message (str): The error message to display
+        suggestion (str, optional): A suggestion for resolving the error
+    """
+    print("\n" + "!" * 50)
+    print("ERROR".center(50))
+    print("!" * 50)
+    print(f"\n{error_message}")
+    
+    if suggestion:
+        print("\nSuggestion:")
+        print(f"  {suggestion}")
+    
+    print("\n" + "!" * 50)
+```
+
+#### B. Implement Error Categories with Specific Suggestions
+
+```python
+def handle_error(error_data):
+    """
+    Handle different types of errors with appropriate messages and suggestions.
+    
+    Args:
+        error_data (dict): Error information
+    """
+    message = error_data.get('message', 'An unknown error occurred')
+    
+    # Categorize errors and provide specific suggestions
+    if 'not found' in message.lower() or 'not recognized' in message.lower():
+        display_error(
+            f"Location '{error_data.get('location', '')}' was not found.",
+            "Check the spelling of the location name or try a nearby major city."
+        )
+    
+    elif 'timeout' in message.lower():
+        display_error(
+            "The weather service is taking too long to respond.",
+            "Please try again in a few moments or check your internet connection."
+        )
+    
+    elif 'connection' in message.lower():
+        display_error(
+            "Could not connect to the weather service.",
+            "Please check your internet connection and try again."
+        )
+    
+    else:
+        display_error(
+            message,
+            "Please try again or try a different location."
+        )
+```
+
+#### C. Add Retry Functionality
+
+```python
+def get_weather_data_with_retry(weather_data_module, location, forecast_days=5, max_retries=3):
+    """
+    Get weather data with automatic retry on failure.
+    
+    Args:
+        weather_data_module: Module containing weather data functions
+        location (str): Location to get weather for
+        forecast_days (int): Number of forecast days
+        max_retries (int): Maximum number of retry attempts
+        
+    Returns:
+        dict: Weather data or error information
+    """
+    attempts = 0
+    
+    while attempts < max_retries:
+        weather_data = weather_data_module.get_weather_data(location, forecast_days)
+        
+        if 'error' not in weather_data:
+            return weather_data
+        
+        attempts += 1
+        
+        if attempts < max_retries:
+            retry = pyip.inputYesNo(
+                prompt=f"\nError: {weather_data.get('message')}\nWould you like to retry? (yes/no): ",
+                default="yes"
+            )
+            
+            if retry == "no":
+                break
+            
+            # If location not found, offer to change it
+            if 'not found' in weather_data.get('message', '').lower():
+                change_location = pyip.inputYesNo(
+                    prompt="Would you like to try a different location? (yes/no): ",
+                    default="yes"
+                )
+                
+                if change_location == "yes":
+                    location = get_location_input()
+    
+    return weather_data
+```
+
+### 3. Extending the Menu to Include Hourly Temperature Visualization
+
+#### A. Update the Menu Options
+
+```python
+def display_menu():
+    """
+    Display the main menu of the application.
+    
+    Returns:
+        int: User's menu choice
+    """
+    print("\n" + "=" * 50)
+    print("WeatherWise - Intelligent Weather Analysis & Advisory")
+    print("=" * 50)
+    
+    menu_options = [
+        "Get Current Weather",
+        "View Weather Forecast",
+        "Ask a Weather Question",
+        "View Temperature Visualization",
+        "View Precipitation Visualization",
+        "View Hourly Temperature Visualization",  # New option
+        "Compare Weather Between Locations",      # Additional option
+        "Exit"
+    ]
+    
+    # Display menu options
+    for i, option in enumerate(menu_options, 1):
+        print(f"{i}. {option}")
+    
+    # Get user choice
+    choice = pyip.inputInt(
+        prompt=f"\nEnter your choice (1-{len(menu_options)}): ",
+        min=1,
+        max=len(menu_options),
+        blank=False
+    )
+    
+    return choice
+```
+
+#### B. Add Handler for the New Menu Option
+
+```python
+def handle_user_input(choice, weather_data_module, nlp_module, visualization_module):
+    """
+    Handle the user's menu choice.
+    
+    Args:
+        choice (int): User's menu choice
+        weather_data_module: Module containing weather data functions
+        nlp_module: Module containing NLP functions
+        visualization_module: Module containing visualization functions
+        
+    Returns:
+        bool: True if the application should continue, False if it should exit
+    """
+    if choice == 8:  # Exit (updated index)
+        return False
+    
+    # Get location for options 1-6
+    if choice in [1, 2, 3, 4, 5, 6]:
+        location = get_location_input()
+    
+    # Handle each menu option
+    # ... existing options 1-5 ...
+    
+    elif choice == 6:  # View Hourly Temperature Visualization
+        display_loading_message("Retrieving weather data...")
+        weather_data = get_weather_data_with_retry(weather_data_module, location, forecast_days=5)
+        
+        if 'error' in weather_data:
+            handle_error(weather_data)
+            return True
+        
+        # Let user select which day to view
+        print("\nSelect a day to view hourly temperatures:")
+        day_options = [f"{day['day_of_week']} ({day['date']})" for day in weather_data['forecast']]
+        
+        day_choice = pyip.inputMenu(
+            day_options,
+            prompt="Available days:\n",
+            numbered=True
+        )
+        
+        # Find the selected day index
+        day_index = day_options.index(day_choice)
+        
+        display_loading_message("Generating hourly temperature visualization...")
+        fig = visualization_module.create_hourly_temperature_visualisation(
+            weather_data, day_index=day_index, output_type='figure'
+        )
+        display_visualization(fig)
+    
+    elif choice == 7:  # Compare Weather Between Locations
+        compare_locations_visualization(visualization_module)
+    
+    return True
+```
+
+#### C. Implement the Hourly Visualization Function
+
+```python
+def create_hourly_temperature_visualisation(weather_data, day_index=0, output_type='display'):
+    """
+    Create visualisation of hourly temperature data for a specific day.
+    
+    Args:
+        weather_data (dict): The processed weather data
+        day_index (int): Index of the day to visualize (0 for today, 1 for tomorrow, etc.)
+        output_type (str): Either 'display' to show in notebook or 'figure' to return the figure
+        
+    Returns:
+        If output_type is 'figure', returns the matplotlib figure object
+        Otherwise, displays the visualisation in the notebook
+    """
+    # Error handling code...
+    
+    # Get the day data
+    day_data = weather_data['forecast'][day_index]
+    day_name = day_data['day_of_week']
+    
+    # Extract hourly data
+    hours = []
+    temps = []
+    feels_like = []
+    precip_chance = []
+    
+    for hour in day_data['hourly']:
+        # Convert time format (e.g., "0000" to "00:00")
+        time_str = hour['time']
+        formatted_time = f"{time_str[:2]}:{time_str[2:]}" if len(time_str) == 4 else time_str
+        hours.append(formatted_time)
+        
+        temps.append(float(hour['temperature_c']))
+        feels_like.append(float(hour.get('feels_like_c', hour['temperature_c'])))
+        precip_chance.append(float(hour.get('chance_of_rain', 0)))
+    
+    # Create figure with two subplots
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10), gridspec_kw={'height_ratios': [3, 1]})
+    
+    # Plot temperature lines
+    ax1.plot(hours, temps, marker='o', linestyle='-', linewidth=2, label='Temperature (°C)', color='red')
+    ax1.plot(hours, feels_like, marker='s', linestyle='--', linewidth=2, label='Feels Like (°C)', color='purple')
+    
+    # Fill the area between the lines
+    ax1.fill_between(hours, temps, feels_like, alpha=0.2, color='blue')
+    
+    # Add labels and title for temperature plot
+    ax1.set_ylabel('Temperature (°C)', fontsize=12)
+    ax1.set_title(f'Hourly Temperature', fontsize=14)
+    ax1.grid(True, alpha=0.3)
+    ax1.legend()
+    
+    # Improve x-axis for temperature plot
+    if len(hours) > 8:
+        ax1.set_xticks(hours[::3])  # Show every third hour
+    else:
+        ax1.set_xticks(hours)
+    
+    # Rotate labels for better readability
+    plt.setp(ax1.get_xticklabels(), rotation=45)
+    
+    # Plot precipitation chance as bars
+    bars = ax2.bar(hours, precip_chance, color='skyblue', alpha=0.7)
+    
+    # Add labels for precipitation plot
+    ax2.set_xlabel('Hour of Day', fontsize=12)
+    ax2.set_ylabel('Chance of Rain (%)', fontsize=12)
+    ax2.set_title('Hourly Chance of Rain', fontsize=14)
+    ax2.grid(True, axis='y', alpha=0.3)
+    ax2.set_ylim(0, 100)  # Percentage scale
+    
+    # Add data labels on bars with significant rain chance
+    for bar in bars:
+        height = bar.get_height()
+        if height > 20:  # Only label bars with >20% chance
+            ax2.text(bar.get_x() + bar.get_width()/2., height + 2,
+                    f'{height:.0f}%', ha='center', va='bottom', fontsize=9)
+    
+    # Set x-ticks to match temperature plot
+    if len(hours) > 8:
+        ax2.set_xticks(hours[::3])
+    else:
+        ax2.set_xticks(hours)
+    
+    # Rotate labels for better readability
+    plt.setp(ax2.get_xticklabels(), rotation=45)
+    
+    # Add overall title
+    location = weather_data['location']['name']
+    country = weather_data['location']['country']
+    location_str = f"{location}, {country}" if country else location
+    
+    plt.suptitle(f'Hourly Weather Forecast for {location_str} on {day_name}', fontsize=16)
+    
+    # Adjust layout
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.9)  # Make room for suptitle
+    
+    # Return or display based on output_type
+    if output_type == 'figure':
+        return fig
+    
+    plt.show()
+    return None
+```
+
+These enhancements will significantly improve your UI by:
+
+1. **Making visualizations more interactive** with customization options, interactive controls, and comparison features
+2. **Improving error handling** with user-friendly error messages, specific suggestions, and retry functionality
+3. **Adding hourly temperature visualization** with a new menu option and detailed hourly view
+
+The result will be a much more robust and user-friendly application that provides a better experience for users exploring weather data. The interactive elements make it more engaging, while the improved error handling ensures users aren't frustrated when things go wrong.
+
